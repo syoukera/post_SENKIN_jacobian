@@ -19,6 +19,9 @@ module chemkin
       integer, allocatable :: nu(:, :)
       integer, allocatable :: nunk(:, :)
 
+      ! jacobian
+      real(8), allocatable :: jac(:, :)
+
 end module chemkin
 
 program calc_jacobian
@@ -31,8 +34,14 @@ program calc_jacobian
       real(8) pressure_atm
       real(8), allocatable :: x(:)
       real(8), allocatable :: y(:)
+      real(8), allocatable :: kfwd(:)
+      real(8), allocatable :: krev(:)
 
-      integer i
+      real(8) :: kfwd_i, krev_i
+      integer :: nu_i(8)
+      integer :: nunk_i(8)
+
+      integer i, j, num_reac, num_prod
       
       open(unit_cklink, form='unformatted', file='input/cklink')
       open(unit_skdata, form='formatted', file='input/skout_datasheet')
@@ -69,12 +78,15 @@ program calc_jacobian
 
       !   ------- manipurate simulation result ---------
 
-      allocate(x(kk), y(kk))
+      allocate(x(kk), y(kk), kfwd(ii), krev(ii), jac(kk, kk))
 
       ! read each line
       do 
             read(unit_skdata, *, end=999) time, pressure_atm, temperature_K,  &
                                         (x(i), i = 1, kk)
+            
+            call ckkfkr(pressure_atm*1.01325d6, temperature_K, x,  &
+                        int_ckwk, real_ckwk, kfwd, krev)
 ! C
 ! C     CONVERT X TO Y
 ! C
@@ -91,7 +103,38 @@ program calc_jacobian
 ! C
 ! C     PRINT OUT ENTHALPY
 ! C
-            ! write(unit_jac, *) time
+            write(unit_jac, *) time, pressure_atm, temperature_K,  &
+                               (x(i), i = 1, kk)
+
+            write(unit_jac, *) kfwd
+            write(unit_jac, *) krev
+
+            do i = 1, ii
+                  nu_i   = nu(:, i)
+                  nunk_i = nunk(:, i)
+                  kfwd_i = kfwd(i)
+                  krev_i = krev(i)
+
+                  num_reac = count(nu_i(1:3) .ne. 0)
+                  num_prod = count(nu_i(4:8) .ne. 0)
+
+                  ! write(6, *) num_reac, num_prod
+
+                  if (num_reac == 1) then
+                        jac(nunk_i(1), nunk_i(1)) = -kfwd_i
+                        jac(nunk_i(4), nunk_i(1)) = +kfwd_i  
+                  elseif (num_reac == 2) then
+                        
+                  else 
+
+                  endif
+            enddo
+
+            do i = 1, kk
+                  write(6, *) (jac(i, j), j = 1, kk)
+            enddo
+
+            exit
       enddo
 
 999   continue
