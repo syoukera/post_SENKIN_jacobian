@@ -1,4 +1,5 @@
 *.o
+*.mod
 calc_jac
 output/*
 input/*

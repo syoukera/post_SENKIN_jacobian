@@ -18,7 +18,7 @@ FILES = \
 	$(COMPILE) $(COMOTT1) $(COMCONV) -c $< -o $@
 
 .f90.o:
-	$(COMPILE) $(COMOTT1) $(COMCONV) -c $< -o $@
+	$(COMPILE) $(COMOTT1) $(COMCONV) -c $< -o $@ -J src
 
 calc_jac: $(FILES)
-	$(COMPILE) $(COMOTT1) $(COMCONV) $(FILES) -o calc_jac $(COMLIB1)
+	$(COMPILE) $(COMOTT1) $(COMCONV) $(FILES) -o calc_jac $(COMLIB1) -I src

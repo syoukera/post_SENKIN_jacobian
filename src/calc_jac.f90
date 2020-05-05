@@ -1,5 +1,4 @@
-program calc_jacobian
-      implicit none
+module chemkin
 
       ! unit number
       integer, parameter :: unit_stdout = 6
@@ -15,6 +14,16 @@ program calc_jacobian
 
       ! chemkin index
       integer mm, kk, ii, nfit
+
+      ! reaction index
+      integer, allocatable :: nu(:, :)
+      integer, allocatable :: nunk(:, :)
+
+end module chemkin
+
+program calc_jacobian
+      use chemkin
+      implicit none
 
       ! simulation result
       real(8) time
@@ -41,8 +50,14 @@ program calc_jacobian
                   unit_stdout, int_ckwk, real_ckwk, char_ckwk)
 
       call ckindx(int_ckwk, real_ckwk, mm, kk, ii, nfit)
+      
+      !   ------- get reaction index ---------
 
-      !   ------- load simulation result ---------
+      allocate(nu(8, ii))
+      allocate(nunk(8, ii))
+      call get_reaction_index()
+
+      !   ------- manipurate simulation result ---------
 
       allocate(x(kk), y(kk))
 
@@ -66,9 +81,43 @@ program calc_jacobian
 ! C
 ! C     PRINT OUT ENTHALPY
 ! C
-            write(unit_jac, *) time
+            ! write(unit_jac, *) time
       enddo
 
 999   continue
 
 end program calc_jacobian
+
+subroutine get_reaction_index()
+      use chemkin, only: int_ckwk, nu, nunk, ii, unit_jac
+
+      COMMON /CKSTRT/ NMM , NKK , NII , MXSP, MXTB, MXTP, NCP , NCP1,  &
+                      NCP2, NCP2T,NPAR, NLAR, NFAR, NLAN, NFAL, NREV,  &
+                      NTHB, NRLT, NWL,  IcMM, IcKK, IcNC, IcPH, IcCH,  &
+                      IcNT, IcNU, IcNK, IcNS, IcNR, IcLT, IcRL, IcRV,  &
+                      IcWL, IcFL, IcFO, IcKF, IcTB, IcKN, IcKT, NcAW,  &
+                      NcWT, NcTT, NcAA, NcCO, NcRV, NcLT, NcRL, NcFL,  &
+                      NcKT, NcWL, NcRU, NcRC, NcPA, NcKF, NcKR, NcK1,  &
+                      NcK2, NcK3, NcK4, NcI1, NcI2, NcI3, NcI4
+
+      nu = int_ckwk(IcNU)
+      nunk = int_ckwk(IcNK)
+
+      write(unit_jac, *) 'nu = '
+      do i = 1, ii
+            write(unit_jac, *) (int_ckwk(IcNU+(i-1)*8+j-1), j = 1, 8)
+      enddo
+      ! do i = 1, ii
+      !       write(unit_jac, *) (nu(j, i), j = 1, 6)
+      ! enddo
+
+      write(unit_jac, *) 'nunk = '
+      do i = 1, ii
+            write(unit_jac, *) (int_ckwk(IcNK+(i-1)*8+j-1), j = 1, 8)
+      enddo
+      ! do i = 1, ii
+            ! write(unit_jac, *) (nunk(j, i), j = 1, 8)
+      ! enddo
+
+end subroutine get_reaction_index
+
