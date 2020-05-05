@@ -57,6 +57,16 @@ program calc_jacobian
       allocate(nunk(8, ii))
       call get_reaction_index()
 
+      ! write(unit_jac, *) 'nu = '
+      ! do i = 1, ii
+      !       write(unit_jac, *) (nu(j, i), j = 1, 8)
+      ! enddo
+
+      ! write(unit_jac, *) 'nunk = '      
+      ! do i = 1, ii
+      !       write(unit_jac, *) (nunk(j, i), j = 1, 8)
+      ! enddo
+
       !   ------- manipurate simulation result ---------
 
       allocate(x(kk), y(kk))
@@ -89,7 +99,7 @@ program calc_jacobian
 end program calc_jacobian
 
 subroutine get_reaction_index()
-      use chemkin, only: int_ckwk, nu, nunk, ii, unit_jac
+      use chemkin, only: int_ckwk, nu, nunk, ii
 
       COMMON /CKSTRT/ NMM , NKK , NII , MXSP, MXTB, MXTP, NCP , NCP1,  &
                       NCP2, NCP2T,NPAR, NLAR, NFAR, NLAN, NFAL, NREV,  &
@@ -100,24 +110,25 @@ subroutine get_reaction_index()
                       NcKT, NcWL, NcRU, NcRC, NcPA, NcKF, NcKR, NcK1,  &
                       NcK2, NcK3, NcK4, NcI1, NcI2, NcI3, NcI4
 
-      nu = int_ckwk(IcNU)
-      nunk = int_ckwk(IcNK)
-
-      write(unit_jac, *) 'nu = '
+      ! write(unit_jac, *) 'nu = '
       do i = 1, ii
-            write(unit_jac, *) (int_ckwk(IcNU+(i-1)*8+j-1), j = 1, 8)
-      enddo
-      ! do i = 1, ii
-      !       write(unit_jac, *) (nu(j, i), j = 1, 6)
-      ! enddo
+            ! write(unit_jac, *) (int_ckwk(IcNU+(i-1)*8+j-1), j = 1, 8)
 
-      write(unit_jac, *) 'nunk = '
-      do i = 1, ii
-            write(unit_jac, *) (int_ckwk(IcNK+(i-1)*8+j-1), j = 1, 8)
+            i_start = IcNU+(i-1)*8
+            i_end   = IcNU+(i-1)*8+7
+
+            nu(:, i) = int_ckwk(i_start:i_end)
       enddo
-      ! do i = 1, ii
-            ! write(unit_jac, *) (nunk(j, i), j = 1, 8)
-      ! enddo
+
+      ! write(unit_jac, *) 'nunk = '
+      do i = 1, ii
+            ! write(unit_jac, *) (int_ckwk(IcNK+(i-1)*8+j-1), j = 1, 8)
+            
+            i_start = IcNK+(i-1)*8
+            i_end   = IcNK+(i-1)*8+7
+            
+            nunk(:, i) = int_ckwk(i_start:i_end)
+      enddo
 
 end subroutine get_reaction_index
 
