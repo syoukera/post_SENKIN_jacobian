@@ -1,0 +1,4 @@
+*.o
+calc_rope
+output/*
+input/*
