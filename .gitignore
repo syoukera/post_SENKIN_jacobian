@@ -1,4 +1,4 @@
 *.o
-calc_rope
+calc_jac
 output/*
 input/*

@@ -7,18 +7,18 @@ COMOTT1 = -O0 -Wall -Wextra
 COMCONV = 
 
 FILES = \
-	calc_rop.o \
-	cklib.o \
+	src/calc_jac.o \
+	src/cklib.o \
 
 
 
-.SUFFIXES: .f .o
+.SUFFIXES: .f .o .f90
 
 .f.o:
-	$(COMPILE) $(COMOTT1) $(COMCONV) -c $<
+	$(COMPILE) $(COMOTT1) $(COMCONV) -c $< -o $@
 
-calc_rope: $(FILES)
-	$(COMPILE) $(COMOTT1) $(COMCONV) $(FILES) -o calc_rope $(COMLIB1)
+.f90.o:
+	$(COMPILE) $(COMOTT1) $(COMCONV) -c $< -o $@
 
-calc_rop.o: calc_rop.f
-cklib.o: cklib.f
+calc_jac: $(FILES)
+	$(COMPILE) $(COMOTT1) $(COMCONV) $(FILES) -o calc_jac $(COMLIB1)
